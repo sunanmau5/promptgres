@@ -22,9 +22,10 @@ When working with Python files, we use `uv` as our package manager and runtime. 
 - Follow PEP 8 style guide
 - Use Ruff for code formatting and linting
 - Format on save
-- Use Ruff's recommended settings:
+- Ruff settings (see pyproject.toml):
   - Line length: 88
   - Quote style: double quotes
+  - Indent style: spaces
   - Import sorting: isort style
 
 ## Commands

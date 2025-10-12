@@ -1,13 +1,23 @@
 [project]
-name = "cursor-eda"
+name = "promptgres"
 version = "0.1.0"
-description = "Add your description here"
+description = "A personal toolkit for rapid SQL query generation from stakeholder requirements using AI assistance."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "psycopg[binary]>=3.2.0",
     "python-dotenv>=1.0.0",
-    "scikit-learn>=1.6.1",
-    "xgboost>=3.0.0",
-    "folium",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
 ]

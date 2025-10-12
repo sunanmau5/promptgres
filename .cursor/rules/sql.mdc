@@ -34,3 +34,25 @@ When working with SQL files, we use PostgreSQL as our database engine. SQL files
 - Use proper indentation for readability
 - Follow PostgreSQL's SQL dialect specifications
 - Use parameterized queries to prevent SQL injection
+
+## Query File Generation
+
+**Always create a separate `.sql` file for each SQL query in the `queries/` directory.**
+
+### Guidelines
+
+1. **One Query Per File**: Each SQL query should be in its own file
+2. **Descriptive Names**: Use descriptive, snake_case filenames (e.g., `daily_active_users.sql`, `revenue_by_month.sql`)
+3. **Location**: Store all query files in the `queries/` directory at the project root
+4. **Comments**: Include a brief comment at the top describing what the query does
+5. **Organization**: Group related queries using prefixes when appropriate (e.g., `user_activity_daily.sql`, `user_activity_weekly.sql`)
+
+### Example
+
+When a user asks for multiple queries, create separate files:
+
+- `queries/daily_active_users.sql`
+- `queries/weekly_active_users.sql`
+- `queries/monthly_active_users.sql`
+
+Rather than displaying them inline in the chat.

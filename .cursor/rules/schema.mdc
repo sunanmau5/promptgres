@@ -1,0 +1,67 @@
+---
+description: Database schema XML files
+globs: schema/*.xml
+alwaysApply: false
+---
+
+# Schema XML Rules
+
+This rule applies to XML schema files in the `schema/` directory.
+
+## File Pattern
+
+schema/\*.xml
+
+## Description
+
+These XML files contain database schema information extracted from PostgreSQL. They are machine-readable files used to provide database context to AI assistants when generating SQL queries.
+
+## File Types
+
+### pg_schema.xml
+
+Contains tables, columns, and their data types:
+
+```xml
+<database name="database_name">
+  <table schema="schema_name" name="table_name">
+    <column name="column_name" type="data_type" nullable="YES|NO" />
+  </table>
+</database>
+```
+
+- **type**: Shows actual enum type names (e.g., `user_role`) instead of generic `USER-DEFINED`
+- **nullable**: `YES` or `NO`
+
+### pg_enums.xml
+
+Contains enum type definitions and their values:
+
+```xml
+<database name="database_name">
+  <schema name="schema_name">
+    <enum name="enum_name">
+      <value>enum_value_1</value>
+      <value>enum_value_2</value>
+    </enum>
+  </schema>
+</database>
+```
+
+## Generation
+
+These files are auto-generated and should NOT be manually edited.
+
+Regenerate using:
+
+```bash
+uv run scripts/get_schema.py
+uv run scripts/get_enums.py
+```
+
+## Usage
+
+- Reference these files when generating SQL queries
+- Cross-reference enum types between `pg_schema.xml` and `pg_enums.xml`
+- Use to understand table relationships and column constraints
+- Provide as context to AI for query generation

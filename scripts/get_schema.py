@@ -52,11 +52,17 @@ def get_schema_as_xml(
         table_elem.set("schema", table_schema)
         table_elem.set("name", table_name)
 
-        # get column information
+        # get column information with actual udt names for user-defined types
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT column_name, data_type, is_nullable
+                SELECT
+                    column_name,
+                    CASE
+                        WHEN data_type = 'USER-DEFINED' THEN udt_name
+                        ELSE data_type
+                    END AS data_type,
+                    is_nullable
                 FROM information_schema.columns
                 WHERE table_schema = %s AND table_name = %s
                 ORDER BY ordinal_position

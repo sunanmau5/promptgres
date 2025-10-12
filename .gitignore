@@ -1,7 +1,17 @@
+# environment
 .env
-*.db
-schema/*.xml
+
+# python
 __pycache__/
 *.pyc
 .venv/
 .uv/
+
+# database
+*.db
+
+# queries
+queries/*.sql
+
+# schema
+schema/*.xml
