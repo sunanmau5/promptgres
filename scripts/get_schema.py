@@ -52,30 +52,39 @@ def get_schema_as_xml(
         table_elem.set("schema", table_schema)
         table_elem.set("name", table_name)
 
-        # get column information with actual udt names for user-defined types
+        # get column information with actual udt names for user-defined types and descriptions
         with conn.cursor() as cur:
             cur.execute(
                 """
                 SELECT
-                    column_name,
+                    c.column_name,
                     CASE
-                        WHEN data_type = 'USER-DEFINED' THEN udt_name
-                        ELSE data_type
+                        WHEN c.data_type = 'USER-DEFINED' THEN c.udt_name
+                        ELSE c.data_type
                     END AS data_type,
-                    is_nullable
-                FROM information_schema.columns
-                WHERE table_schema = %s AND table_name = %s
-                ORDER BY ordinal_position
+                    c.is_nullable,
+                    pgd.description
+                FROM information_schema.columns c
+                LEFT JOIN pg_catalog.pg_statio_all_tables st
+                    ON c.table_schema = st.schemaname
+                    AND c.table_name = st.relname
+                LEFT JOIN pg_catalog.pg_description pgd
+                    ON pgd.objoid = st.relid
+                    AND pgd.objsubid = c.ordinal_position
+                WHERE c.table_schema = %s AND c.table_name = %s
+                ORDER BY c.ordinal_position
             """,
                 (table_schema, table_name),
             )
             columns = cur.fetchall()
 
-        for col_name, data_type, is_nullable in columns:
+        for col_name, data_type, is_nullable, description in columns:
             column_elem = ET.SubElement(table_elem, "column")
             column_elem.set("name", col_name)
             column_elem.set("type", data_type)
             column_elem.set("nullable", is_nullable)
+            if description:
+                column_elem.set("description", description)
 
     conn.close()
     return root

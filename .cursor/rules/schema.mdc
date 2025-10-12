@@ -32,6 +32,7 @@ Contains tables, columns, and their data types:
 
 - **type**: Shows actual enum type names (e.g., `user_role`) instead of generic `USER-DEFINED`
 - **nullable**: `YES` or `NO`
+- **description**: (optional) Human-readable column description extracted from PostgreSQL comments
 
 ### pg_enums.xml
 

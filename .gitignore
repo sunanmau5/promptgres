@@ -15,3 +15,5 @@ queries/*.sql
 
 # schema
 schema/*.xml
+schema/*.yaml
+schema/add_comments.sql

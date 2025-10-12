@@ -41,8 +41,8 @@ promptgres/
 │   └── pg_enums.xml
 ├── queries/
 ├── scripts/
-│   ├── get_schema.p
-│   └── get_enums.p
+│   ├── get_schema.py
+│   └── get_enums.py
 └── .sqlfluff
 ```
 
@@ -50,19 +50,36 @@ promptgres/
 
 ### 1. Extract Database Context
 
-First, extract your database schema and enums so Cursor has full context:
+Extract your database schema and enums:
 
 ```bash
-# Extract tables, columns, and data types
 uv run scripts/get_schema.py
-
-# Extract enum definitions
 uv run scripts/get_enums.py
 ```
 
-This generates `schema/pg_schema.xml` and `schema/pg_enums.xml` which provide Cursor with complete database structure.
+This generates `schema/pg_schema.xml` and `schema/pg_enums.xml`.
 
-### 2. Generate Queries with Cursor
+### 2. (Optional) Add Column Descriptions
+
+Add descriptions to your database columns:
+
+```bash
+# Generate YAML template
+uv run scripts/generate_description_template.py
+
+# Manually fill in descriptions in schema/column_descriptions.yaml
+
+# Generate SQL COMMENT statements
+uv run scripts/apply_descriptions.py
+
+# Apply to database
+psql -f schema/add_comments.sql
+
+# Re-extract schema to include descriptions
+uv run scripts/get_schema.py
+```
+
+### 3. Generate Queries with Cursor
 
 Ask Cursor to generate queries in natural language:
 
@@ -74,7 +91,7 @@ Ask Cursor to generate queries in natural language:
 
 Cursor will:
 
-- Use the schema context to understand your database structure
-- Reference enum values from the extracted definitions
-- Follow the SQL formatting rules (uppercase keywords, proper indentation)
-- Create a separate `.sql` file in the `queries/` directory
+- Use the schema context including column descriptions
+- Reference enum values from extracted definitions
+- Follow SQL formatting rules
+- Create separate `.sql` files in `queries/` directory
