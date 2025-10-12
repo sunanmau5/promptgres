@@ -1,72 +1,108 @@
-"""Script to extract database schema from DuckDB and output as XML.
+"""Script to extract database schema from PostgreSQL and output as XML.
 
-This script connects to a DuckDB database, extracts the schema information,
+This script connects to a PostgreSQL database, extracts the schema information,
 and outputs it in a machine-readable XML format that can be used in Cursor.
 """
 
-import duckdb
+import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import psycopg
+from dotenv import load_dotenv
 
-def get_schema_as_xml(db_path: str) -> ET.Element:
-    """Extract schema from DuckDB database and return as XML Element.
-    
+
+def get_schema_as_xml(
+    host: str, port: int, database: str, user: str, password: str
+) -> ET.Element:
+    """Extract schema from PostgreSQL database and return as XML Element.
+
     Args:
-        db_path: Path to the DuckDB database file
-        
+        host: PostgreSQL server host
+        port: PostgreSQL server port
+        database: Database name
+        user: Database user
+        password: Database password
+
     Returns:
         ET.Element: XML Element containing the database schema
     """
-    # Connect to the DuckDB database
-    conn = duckdb.connect(db_path)
-    
-    # Get all tables
-    tables = conn.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'").fetchall()
-    
-    # Create XML root
+    # connect to the PostgreSQL database
+    conn = psycopg.connect(
+        host=host, port=port, dbname=database, user=user, password=password
+    )
+
+    # get all tables from all schemas (excluding system schemas)
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT table_schema, table_name
+            FROM information_schema.tables
+            WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+            ORDER BY table_schema, table_name
+        """)
+        tables = cur.fetchall()
+
+    # create XML root
     root = ET.Element("database")
-    root.set("name", Path(db_path).stem)
-    
-    # For each table, get its schema
-    for (table_name,) in tables:
+    root.set("name", database)
+
+    # for each table, get its schema
+    for table_schema, table_name in tables:
         table_elem = ET.SubElement(root, "table")
+        table_elem.set("schema", table_schema)
         table_elem.set("name", table_name)
-        
-        # Get column information
-        columns = conn.execute(f"""
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns 
-            WHERE table_schema = 'main' AND table_name = '{table_name}'
-            ORDER BY ordinal_position
-        """).fetchall()
-        
+
+        # get column information
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT column_name, data_type, is_nullable
+                FROM information_schema.columns
+                WHERE table_schema = %s AND table_name = %s
+                ORDER BY ordinal_position
+            """,
+                (table_schema, table_name),
+            )
+            columns = cur.fetchall()
+
         for col_name, data_type, is_nullable in columns:
             column_elem = ET.SubElement(table_elem, "column")
             column_elem.set("name", col_name)
             column_elem.set("type", data_type)
             column_elem.set("nullable", is_nullable)
-    
+
     conn.close()
     return root
 
 
 def save_schema_to_file(root: ET.Element, output_path: str) -> None:
     """Save the XML schema to a file with pretty printing.
-    
+
     Args:
         root: XML Element containing the schema
         output_path: Path where to save the XML file
     """
+    # create directory if it doesn't exist
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
     ET.indent(root)
     tree = ET.ElementTree(root)
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
 
 if __name__ == "__main__":
-    db_path = "local.db"
-    output_path = "schema/local_db_schema.xml"
-    
-    root = get_schema_as_xml(db_path)
+    # load environment variables from .env file
+    load_dotenv()
+
+    # read connection parameters from environment variables
+    host = os.getenv("PGHOST", "localhost")
+    port = int(os.getenv("PGPORT", "5432"))
+    database = os.getenv("PGDATABASE", "postgres")
+    user = os.getenv("PGUSER", "postgres")
+    password = os.getenv("PGPASSWORD", "")
+
+    output_path = "schema/pg_schema.xml"
+
+    root = get_schema_as_xml(host, port, database, user, password)
     save_schema_to_file(root, output_path)
-    print(f"Schema saved to {output_path}") 
+    print(f"Schema saved to {output_path}")

@@ -1,0 +1,65 @@
+---
+alwaysApply: true
+---
+
+# Clarification Before Action
+
+## Core Principle
+
+**Do not make any changes until you have 95% confidence that you know what to build.**
+
+Ask follow-up questions until you have that confidence.
+
+## When to Ask Questions
+
+Before implementing any change, ensure you understand:
+
+1. **What** needs to be built/changed
+2. **Why** this change is needed
+3. **Where** in the codebase it should go
+4. **How** it should integrate with existing code
+5. **Scope** - what's included and excluded
+
+## Questions to Consider
+
+### For SQL Queries
+- What is the business purpose of this query?
+- Which tables/schemas are involved?
+- What time period should be analyzed?
+- Are there specific filters or conditions needed?
+- What should the output columns be?
+
+### For Database Changes
+- Which schema and table are affected?
+- What columns need to be added/modified?
+- Are there enum values involved?
+- What are the constraints and relationships?
+- Is this for production or analysis?
+
+### For Python Scripts
+- What data needs to be extracted?
+- What is the output format and destination?
+- Are there existing scripts to reference?
+- What error handling is needed?
+
+### For Documentation
+- What audience is this for?
+- What level of detail is needed?
+- Are there related documents to cross-reference?
+- What format is preferred?
+
+## Red Flags for Clarification
+
+Stop and ask questions if:
+- The request is vague or ambiguous
+- Multiple interpretations are possible
+- You're unsure about business logic or requirements
+- Impact on existing code is unclear
+- You're about to make assumptions
+
+## Exception
+
+You may proceed without additional questions if:
+- The request is completely clear and unambiguous
+- It's a trivial change (typo fix, formatting)
+- You have >95% confidence in understanding the requirement

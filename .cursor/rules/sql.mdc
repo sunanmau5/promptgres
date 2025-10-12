@@ -1,28 +1,36 @@
 ---
-description: 
+description:
 globs: *.sql
 alwaysApply: false
 ---
+
 # SQL Rules
 
 This rule applies to all SQL files in the project.
 
 ## File Pattern
-*.sql
+
+\*.sql
 
 ## Description
-When working with SQL files, we use DuckDB as our database engine. SQL files should be executed using the command `duckdb local.db -f {file}`.
+
+When working with SQL files, we use PostgreSQL as our database engine. SQL files should be executed using the command `psql -f {file}`.
 
 ## Formatting
+
 - Use 4 spaces for indentation
-- Use SQLFluff for formatting with DuckDB dialect
+- Use SQLFluff for formatting with PostgreSQL dialect
 - Format on save
 
 ## Commands
-- Run SQL file: `duckdb local.db -f {file}`
+
+- Run SQL file: `psql -f {file}`
+- Run SQL file with specific database: `psql -d {database} -f {file}`
 
 ## Best Practices
+
 - Use consistent naming conventions
 - Include comments for complex queries
 - Use proper indentation for readability
-- Follow DuckDB's SQL dialect specifications 
+- Follow PostgreSQL's SQL dialect specifications
+- Use parameterized queries to prevent SQL injection

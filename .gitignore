@@ -1,13 +1,7 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-
-# Virtual environments
-.venv
-
-# DuckDB
+.env
 *.db
+schema/*.xml
+__pycache__/
+*.pyc
+.venv/
+.uv/
