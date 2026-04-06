@@ -1,0 +1,36 @@
+public:
+  users:
+    id:
+      type: uuid
+      nullable: false
+      description: Primary user identifier
+    email:
+      type: text
+      nullable: false
+      description: Login email address
+    status:
+      type: user_status
+      nullable: false
+      description: Current lifecycle state
+    created_at:
+      type: timestamp with time zone
+      nullable: false
+      description: Creation timestamp
+analytics:
+  events:
+    id:
+      type: uuid
+      nullable: false
+      description: Event identifier
+    user_id:
+      type: uuid
+      nullable: false
+      description: Related user identifier
+    event_name:
+      type: text
+      nullable: false
+      description: Canonical event name
+    occurred_at:
+      type: timestamp with time zone
+      nullable: false
+      description: Event timestamp

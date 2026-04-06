@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<database name="example_app">
+  <table schema="public" name="users">
+    <column name="id" type="uuid" nullable="NO" description="Primary user identifier" />
+    <column name="email" type="text" nullable="NO" />
+    <column name="status" type="user_status" nullable="NO" />
+    <column name="created_at" type="timestamp with time zone" nullable="NO" />
+  </table>
+  <table schema="analytics" name="events">
+    <column name="id" type="uuid" nullable="NO" />
+    <column name="user_id" type="uuid" nullable="NO" />
+    <column name="event_name" type="text" nullable="NO" />
+    <column name="occurred_at" type="timestamp with time zone" nullable="NO" />
+  </table>
+</database>

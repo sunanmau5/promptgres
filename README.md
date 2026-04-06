@@ -1,97 +1,146 @@
 # Promptgres
 
-A Cursor toolkit for rapidly generating PostgreSQL queries from stakeholder requirements. By maintaining extracted database schemas and cursor rules, this enables natural language to SQL query generation with full context awareness.
+Promptgres packages a small PostgreSQL metadata toolkit as a reusable Python library and CLI. It extracts schema and enum metadata, turns schema XML into editable YAML description templates, and renders SQL `COMMENT` statements back from those descriptions.
 
-## Tools
+The repository is structured for open-source use:
 
-- **[uv](https://docs.astral.sh/uv/)** - fast Python package manager and runtime
-- **[Ruff](https://docs.astral.sh/ruff/)** - fast Python linter and formatter
-- **[SQLFluff](https://sqlfluff.com/)** - SQL linter and formatter (PostgreSQL dialect)
-- **[psycopg](https://www.psycopg.org/)** - PostgreSQL adapter for Python
+- install and run with `uv`
+- lint and format with Ruff
+- test with pytest and coverage gates
+- publish as a normal Python package
 
-## Setup
-
-Install dependencies:
+## Install
 
 ```bash
-uv sync
+uv sync --group dev --group test
 ```
 
-Configure database connection in `.env`:
+## CLI Usage
+
+Configure PostgreSQL access in `.env` or via flags:
 
 ```bash
 PGHOST=localhost
 PGPORT=5432
-PGDATABASE=your_database
-PGUSER=your_user
-PGPASSWORD=your_password
+PGDATABASE=postgres
+PGUSER=postgres
+PGPASSWORD=postgres
 ```
 
-## Project Structure
-
-```
-promptgres/
-├── .cursor/rules/
-│   ├── clarification-first.mdc
-│   ├── sql.mdc
-│   ├── schema.mdc
-│   └── python.mdc
-├── schema/
-│   ├── pg_schema.xml
-│   └── pg_enums.xml
-├── queries/
-├── scripts/
-│   ├── get_schema.py
-│   └── get_enums.py
-└── .sqlfluff
-```
-
-## Workflow
-
-### 1. Extract Database Context
-
-Extract your database schema and enums:
+Export schema metadata:
 
 ```bash
-uv run scripts/get_schema.py
-uv run scripts/get_enums.py
+uv run promptgres schema export --output schema/pg_schema.xml
 ```
 
-This generates `schema/pg_schema.xml` and `schema/pg_enums.xml`.
-
-### 2. (Optional) Add Column Descriptions
-
-Add descriptions to your database columns:
+Export enum metadata:
 
 ```bash
-# Generate YAML template
-uv run scripts/generate_description_template.py
-
-# Manually fill in descriptions in schema/column_descriptions.yaml
-
-# Generate SQL COMMENT statements
-uv run scripts/apply_descriptions.py
-
-# Apply to database
-psql -f schema/add_comments.sql
-
-# Re-extract schema to include descriptions
-uv run scripts/get_schema.py
+uv run promptgres enums export --output schema/pg_enums.xml
 ```
 
-### 3. Generate Queries with Cursor
+Generate a description template from schema XML:
 
-Ask Cursor to generate queries in natural language:
+```bash
+uv run promptgres descriptions template \
+  --schema schema/pg_schema.xml \
+  --output schema/column_descriptions.yaml
+```
 
-**Example prompts:**
+Generate SQL comments from the description YAML:
 
-- "Give me a SQL query for daily active users"
-- "Show me revenue by month for the last quarter"
-- "Create a query to find inactive customers"
+```bash
+uv run promptgres descriptions sql \
+  --descriptions schema/column_descriptions.yaml \
+  --output schema/add_comments.sql
+```
 
-Cursor will:
+## Python API
 
-- Use the schema context including column descriptions
-- Reference enum values from extracted definitions
-- Follow SQL formatting rules
-- Create separate `.sql` files in `queries/` directory
+```python
+from promptgres import (
+    build_schema_collection,
+    render_schema_xml,
+)
+```
+
+The library surface is intentionally small. Transformation logic is kept pure so it can be tested without a live database.
+
+## Development
+
+Run linting and formatting checks:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+```
+
+Run tests with coverage:
+
+```bash
+uv run pytest
+```
+
+Build distributable artifacts:
+
+```bash
+uv build
+```
+
+## Commits
+
+This repository uses Angular-style Conventional Commits. Preferred types are:
+
+- `feat`
+- `fix`
+- `refactor`
+- `test`
+- `docs`
+- `build`
+- `ci`
+- `chore`
+
+Examples:
+
+```text
+feat(cli): add schema export subcommand
+refactor(core): split XML serialization from database access
+chore(release): 0.1.0
+```
+
+To validate local commit messages or inspect the next version bump:
+
+```bash
+uv sync --group release
+uv run cz check --rev-range HEAD~5..HEAD
+uv run python scripts/release.py suggest
+```
+
+## Release Workflow
+
+Release flow is intentionally manual, but helper-driven:
+
+```bash
+uv sync --group dev --group test --group release
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest
+uv build
+uv run python scripts/release.py draft --version 0.1.0
+```
+
+To prepare a release locally:
+
+```bash
+uv run python scripts/release.py prepare --version 0.1.0 --apply
+git commit -m "chore(release): 0.1.0"
+git tag -a v0.1.0 -m "v0.1.0"
+git push origin main
+git push origin v0.1.0
+```
+
+The helper updates `CHANGELOG.md`, keeps `pyproject.toml` aligned with the chosen version, and prints the exact follow-up commands. Review the generated changelog before committing the release.
+
+## Examples
+
+Sanitized fixtures live under `examples/` and are safe to publish. Generated local outputs belong in `schema/` and `queries/`, which are ignored by default.
