@@ -6,14 +6,21 @@ __pycache__/
 *.pyc
 .venv/
 .uv/
+.uv-cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+.ruff_cache/
 
 # database
 *.db
 
 # queries
-queries/*.sql
+queries/*
+!queries/.gitkeep
 
 # schema
-schema/*.xml
-schema/*.yaml
-schema/add_comments.sql
+schema/*
+!schema/.gitkeep
